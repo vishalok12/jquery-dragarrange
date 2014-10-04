@@ -5,7 +5,8 @@ If you are looking for a library which can be ordered/arranged by drag, you are 
 
 How to Use
 ----------
-```<div id="elements-container">
+```js
+<div id="elements-container">
   <div class="draggable-element d-1">Drag 1</div>
   <div class="draggable-element d-2">Drag 2</div>
   <div class="draggable-element d-3">Drag 3</div>
@@ -25,5 +26,5 @@ TODO
 
 ### License
 Dragarrange is licensed under the [MIT license](http://opensource.org/licenses/MIT).
-Copyright (c) 2014 Vishal Kumar(http://github.com/vishalok12)
+Copyright (c) 2014 [Vishal Kumar](http://github.com/vishalok12)
 
