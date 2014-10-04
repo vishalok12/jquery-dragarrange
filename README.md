@@ -5,7 +5,7 @@ If you are looking for a library which can be ordered/arranged by drag, you are 
 
 How to Use
 ----------
-```js
+```html
 <div id="elements-container">
   <div class="draggable-element d-1">Drag 1</div>
   <div class="draggable-element d-2">Drag 2</div>
