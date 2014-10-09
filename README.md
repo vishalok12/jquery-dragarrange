@@ -21,6 +21,10 @@ Optional Parameters
 ###dragSelector
 If passed, object can be dragged only from this selector. The default dragSelector is same DOM element that has called the function.
 
+Destroy drag arrange
+--------------------
+$('.draggable-element').arrangeable('destroy');
+
 ###Demo
 TODO
 
