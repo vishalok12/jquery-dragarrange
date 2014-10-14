@@ -59,9 +59,7 @@
     var leftOffset, topOffset;
     var eventNamespace;
 
-    if (typeof options === "object") {
-      options = $.extend({}, options);
-    } else {
+    if (typeof options === "string") {
       // check if want to destroy drag-arrange
       if (options === 'destroy') {
         if (this.eq(0).data('drag-arrange-destroy')) {
@@ -71,6 +69,8 @@
         return this;
       }
     }
+
+    options = $.extend({}, options);
 
     $elements = this;
     var eventNamespace = getEventNamespace();
