@@ -14,8 +14,6 @@
     factory(jQuery);
   }
 }(function ($) {
-  'use strict';
-
   var IS_TOUCH_DEVICE = ('ontouchstart' in document.documentElement);
   /**
    * mouse move threshold (in px) until drag action starts
@@ -73,7 +71,7 @@
     options = $.extend({}, options);
 
     $elements = this;
-    var eventNamespace = getEventNamespace();
+    eventNamespace = getEventNamespace();
 
     this.each(function() {
       // bindings to trigger drag on element
@@ -127,10 +125,10 @@
 
         // initialize left offset and top offset
         // will be used in successive calls of this function
-        leftOffset = dragElement.offsetLeft - parseInt($dragElement.css('margin-left'))
-          - parseInt($dragElement.css('padding-left'));
-        topOffset = dragElement.offsetTop - parseInt($dragElement.css('margin-top'))
-          - parseInt($dragElement.css('padding-top'));
+        leftOffset = dragElement.offsetLeft - parseInt($dragElement.css('margin-left')) - 
+          parseInt($dragElement.css('padding-left'));
+        topOffset = dragElement.offsetTop - parseInt($dragElement.css('margin-top')) - 
+          parseInt($dragElement.css('padding-top'));
 
         // put cloned element just above the dragged element
         // and move it instead of original element
@@ -267,7 +265,9 @@
   }
 
   function getEventNamespace() {
-    return '.drag-arrange-' + ++counter;
+    counter += 1;
+
+    return '.drag-arrange-' + counter;
   }
 
 }));
