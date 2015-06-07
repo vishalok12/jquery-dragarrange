@@ -28,7 +28,7 @@ bower install jquery-dragarrange
 Or you can download latest library from [here](https://github.com/vishalok12/jquery-dragarrange/releases).
 
 ###Demo
-TODO
+http://vishalok12.github.io/jquery-dragarrange/
 
 ### License
 Dragarrange is licensed under the [MIT license](http://opensource.org/licenses/MIT).
