@@ -1,141 +1,240 @@
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Drag Arrange Example</title>
+
     <style>
-      body {
-        font-family: arial;
-        background: rgb(242, 244, 246);
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
+        body {
+            font-family:arial;
+            background:#EEE;
+            -webkit-user-select:none;
+            -moz-user-select:none;
+            -ms-user-select:none;
+            user-select:none;
+        }
 
-      h3 {
-        color: rgb(199, 204, 209);
-        font-size: 28px;
-        text-align: center;
-      }
+        h3 {
+            color:rgb(199, 204, 209);
+            font-size:28px;
+            text-align:center;
+        }
 
-      #elements-container {
-        text-align: center;
-      }
+        p {
+            margin:1em auto;
+            color:#333;
+            max-width:600px;
+            text-align:center;
+        }
 
-      .draggable-element {
-        display: inline-block;
-        width: 200px;
-        height: 200px;
-        background: white;
-        border: 1px solid rgb(196, 196, 196);
-        line-height: 200px;
-        text-align: center;
-        margin: 10px;
-        color: rgb(51, 51, 51);
-        font-size: 30px;
-        cursor: move;
-      }
+        .elements-container {
+            text-align:center;
+            background:#CCC;
+            border:1px solid #BBB;
+        }
 
-      .drag-list {
-        width: 400px;
-        margin: 0 auto;
-      }
+        .draggable-element {
+            display:inline-block;
+            margin:10px;
+            width:160px;
+            height:160px;
+            background:white;
+            border:1px solid #BBB;
+            line-height:160px;
+            text-align:center;
+            color:#333;
+            font-size:30px;
+            cursor:move;
+        }
 
-      .drag-list > li {
-        list-style: none;
-        background: rgb(255, 255, 255);
-        border: 1px solid rgb(196, 196, 196);
-        margin: 5px 0;
-        font-size: 24px;
-      }
+        .drag-list {
+            margin:10px auto;
+            padding:10px;
+            max-width:400px;
+            background:#CCC;
+            border:1px solid #BBB;
+        }
 
-      .drag-list .title {
-        display: inline-block;
-        width: 130px;
-        padding: 6px 6px 6px 12px;
-        vertical-align: top;
-      }
+        .drag-list > li {
+            list-style:none;
+            background:rgb(255, 255, 255);
+            border:1px solid rgb(196, 196, 196);
+            margin:5px 0;
+            font-size:24px;
+        }
 
-      .drag-list .drag-area {
-        display: inline-block;
-        background: rgb(158, 211, 179);
-        width: 60px;
-        height: 40px;
-        vertical-align: top;
-        float: right;
-        cursor: move;
-      }
+        .drag-list .title {
+            display:inline-block;
+            width:130px;
+            padding:6px 6px 6px 12px;
+            vertical-align:top;
+        }
 
-      .code {
-        background: rgb(255, 255, 255);
-        border: 1px solid rgb(196, 196, 196);
-        width: 600px;
-        margin: 22px auto;
-        position: relative;
-      }
+        .drag-list .drag-area {
+            display:inline-block;
+            background:#999;
+            width:60px;
+            height:40px;
+            vertical-align:top;
+            float:right;
+            cursor:move;
+        }
 
-      .code::before {
-        content: 'Code';
-        background: rgb(80, 80, 80);
-        width: 96%;
-        position: absolute;
-        padding: 8px 2%;
-        color: rgb(255, 255, 255);
-      }
-      
-      .code pre {
-        margin-top: 50px;
-        padding: 0 13px;
-        font-size: 1em;
-      }
+        .dragging {
+            opacity:0.8;
+            transform:rotate(-1deg);
+        }
+
+        .code {
+            background:rgb(255, 255, 255);
+            border:1px solid rgb(196, 196, 196);
+            width:600px;
+            margin:22px auto;
+            position:relative;
+        }
+
+        .code::before {
+            content:'Code';
+            background:rgb(80, 80, 80);
+            width:96%;
+            position:absolute;
+            padding:8px 2%;
+            color:rgb(255, 255, 255);
+        }
+
+        .code pre {
+            margin-top:50px;
+            padding:0 13px;
+            font-size:1em;
+        }
 
     </style>
-  </head>
+</head>
 
-  <body>
-    <section class="showcase showcase-1">
-      <h3>Example 1</h3>
-      <div id="elements-container">
+<body>
+<section class="showcase showcase-1">
+    <h3>Example 1</h3>
+
+    <div class="elements-container ex1">
         <div class="draggable-element d-1">Drag 1</div>
         <div class="draggable-element d-2">Drag 2</div>
         <div class="draggable-element d-3">Drag 3</div>
         <div class="draggable-element d-4">Drag 4</div>
-      </div>
-    </section>
-    <section class="code">
+    </div>
+
+    <h3>Example 1.5</h3>
+
+    <p>Different container, but same classes. Items can be moved from one container to another! Try moving items 1-4 to the container where 5-8 are or vice versa.</p>
+
+    <div class="elements-container ex1">
+        <div class="draggable-element d-5">Drag 5</div>
+        <div class="draggable-element d-6">Drag 6</div>
+        <div class="draggable-element d-7">Drag 7</div>
+        <div class="draggable-element d-8">Drag 8</div>
+    </div>
+</section>
+
+<section class="code">
       <pre>
-$('.draggable-element').arrangeable();
+$('.ex1 .draggable-element').arrangeable();
       </pre>
-    </section>
+</section>
 
-    <section class="showcase showcase-2">
-      <h3>Example 2</h3>
-      <ul class="drag-list">
-        <li><span class="title">list 1</span><span class="drag-area"></span></li>
-        <li><span class="title">list 2</span><span class="drag-area"></span></li>
-        <li><span class="title">list 3</span><span class="drag-area"></span></li>
-        <li><span class="title">list 4</span><span class="drag-area"></span></li>
-        <li><span class="title">list 5</span><span class="drag-area"></span></li>
-        <li><span class="title">list 6</span><span class="drag-area"></span></li>
-        <li><span class="title">list 7</span><span class="drag-area"></span></li>
-      </ul>
-    </section>
+<section class="showcase showcase-2">
+    <h3>Example 2</h3>
 
-    <section class="code">
+    <p>These elements look the same, but they don't share selection criteria with the above elements. So they can't be mingled with those above.</p>
+
+    <div class="elements-container ex2">
+        <div class="draggable-element d-a">Drag A</div>
+        <div class="draggable-element d-b">Drag B</div>
+        <div class="draggable-element d-c">Drag C</div>
+        <div class="draggable-element d-d">Drag D</div>
+    </div>
+</section>
+
+<section class="code">
+      <pre>
+$('.ex2 .draggable-element').arrangeable();
+      </pre>
+</section>
+
+<section class="showcase showcase-3">
+    <h3>Example 3</h3>
+
+    <p>Long list to show auto scrolling.</p>
+    <ul class="set drag-list">
+        <li><span class="title">List 1</span><span class="drag-area"></span></li>
+        <li><span class="title">List 2</span><span class="drag-area"></span></li>
+        <li><span class="title">List 3</span><span class="drag-area"></span></li>
+        <li><span class="title">List 4</span><span class="drag-area"></span></li>
+        <li><span class="title">List 5</span><span class="drag-area"></span></li>
+        <li><span class="title">List 6</span><span class="drag-area"></span></li>
+        <li><span class="title">List 7</span><span class="drag-area"></span></li>
+        <li><span class="title">List 8</span><span class="drag-area"></span></li>
+        <li><span class="title">List 9</span><span class="drag-area"></span></li>
+        <li><span class="title">List 10</span><span class="drag-area"></span></li>
+        <li><span class="title">List 11</span><span class="drag-area"></span></li>
+        <li><span class="title">List 12</span><span class="drag-area"></span></li>
+        <li><span class="title">List 13</span><span class="drag-area"></span></li>
+        <li><span class="title">List 14</span><span class="drag-area"></span></li>
+        <li><span class="title">List 15</span><span class="drag-area"></span></li>
+        <li><span class="title">List 16</span><span class="drag-area"></span></li>
+        <li><span class="title">List 17</span><span class="drag-area"></span></li>
+        <li><span class="title">List 18</span><span class="drag-area"></span></li>
+        <li><span class="title">List 19</span><span class="drag-area"></span></li>
+        <li><span class="title">List 20</span><span class="drag-area"></span></li>
+        <li><span class="title">List 21</span><span class="drag-area"></span></li>
+        <li><span class="title">List 22</span><span class="drag-area"></span></li>
+        <li><span class="title">List 23</span><span class="drag-area"></span></li>
+        <li><span class="title">List 24</span><span class="drag-area"></span></li>
+        <li><span class="title">List 25</span><span class="drag-area"></span></li>
+    </ul>
+</section>
+
+<section class="code">
+      <pre>
+$('.addable.drag-list li').arrangeable({dragSelector : '.drag-area'});
+      </pre>
+</section>
+
+<section class="showcase showcase-4">
+    <h3>Example 4</h3>
+    <p>Explanation</p>
+    <ul class="addable drag-list">
+        <li><span class="title">List 1</span><span class="drag-area"></span></li>
+    </ul>
+    <button class="add list-item">Add an item!</button>
+</section>
+
+<section class="code">
       <pre>
 $('li').arrangeable({dragSelector: '.drag-area'});
       </pre>
-    </section>
+</section>
 
 
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="../drag-arrange.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="../drag-arrange.js"></script>
 
-    <script type="text/javascript">
-      $(function() {
-          $('.draggable-element').arrangeable();
-          $('li').arrangeable({dragSelector: '.drag-area'});
-      });
-    </script>
+<script type="text/javascript">
+    $(function () {
+        $('.ex1 .draggable-element').arrangeable('.ex1 .draggable-element', {cssPrefix:'test_', containerSelector: '.showcase-1'});
+        $('.ex2 .draggable-element').arrangeable('.ex2 .draggable-element', {containerSelector: '.showcase-2'});
+        $('.set.drag-list li').arrangeable('.set.drag-list li', {dragSelector : '.drag-area', containerSelector: '.set.drag-list'});
+        $('.addable.drag-list li').arrangeable('.addable.drag-list li', {dragSelector : '.drag-area'});
 
-  </body>
+        $('.add.list-item').on('click', function(){
+            var nextTitle = 'List ' + ($('.addable.drag-list li').length + 1);
+            $list = $('.addable.drag-list');
+            var $listItem = $($list.children('li')[0]);
+            var $nextItem = $($listItem.clone());
+            $('.title', $nextItem).text(nextTitle);
+            $list.append($nextItem);
+        });
+    });
+</script>
+
+</body>
 </html>
