@@ -33,6 +33,7 @@
             background:#42235C;
             color:#FFF;
             text-align:center; }
+
         footer {
             margin:3rem 0 0 0;
             padding:3rem;
@@ -41,8 +42,10 @@
             color:#FFF;
             text-align:center;
         }
-        footer a {color:#B3A7BE;text-decoration:none;}
-        footer a:hover {color:#FFF;}
+
+        footer a { color:#B3A7BE; text-decoration:none; }
+
+        footer a:hover { color:#FFF; }
 
         dl {
             padding:1rem;
@@ -186,6 +189,10 @@
                     <dt>containerSelector: (string | default '')</dt>
                     <dd>jQuery selector to define the single parent to all draggable element containers that should behave together.
                         See <a href="#ex2">example #2</a> below.
+                    </dd>
+                    <dt>dragSelector: (string | default '')</dt>
+                    <dd>jQuery selector of element within a draggable element to be used as the drag handle. If not set, the entire draggable
+                        element acts as the handle.
                     </dd>
                     <dt>scrollSpeed: (integer | default 20)</dt>
                     <dd>Maximum number of pixels to move at a time in auto scroll. It should be noted that during auto scroll, the closer the
@@ -346,32 +353,32 @@
 
 <footer><a href="https://github.com/jcarlow/jquery-dragarrange">jcarlow/jquery-dragarrange</a> is a fork of <a href="https://github.com/vishalok12/jquery-dragarrange">vishalok12/jquery-dragarrange</a></footer>
 
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script type="text/javascript" src="../drag-arrange.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script type="text/javascript" src="../drag-arrange.js"></script>
 
-    <script type="text/javascript">
-        $(function () {
-            // 1. Basic usage
-            $('.ex1 .draggable-element').dragArrange('.ex1 .draggable-element');
-            // 2. Multiple groups inside a bigger container defined by "containerSelector" option
-            $('.ex2 .draggable-element').dragArrange('.ex2 .draggable-element', {containerSelector : '.showcase-2'});
-            // 3. Example using a specified drag selector area
-            $('.set.drag-list li').dragArrange('.set.drag-list li', {dragSelector : '.drag-area'});
-            // 4. Dynamically added items
-            $('.addable.drag-list li').dragArrange('.addable.drag-list li', {dragSelector : '.drag-area'});
-            // 5. Customized dragging class
-            $('.ex5 .draggable-element').dragArrange('.ex5 .draggable-element', {cssPrefix : 'stooges_'});
+<script type="text/javascript">
+    $(function () {
+        // 1. Basic usage
+        $('.ex1 .draggable-element').dragArrange('.ex1 .draggable-element');
+        // 2. Multiple groups inside a bigger container defined by "containerSelector" option
+        $('.ex2 .draggable-element').dragArrange('.ex2 .draggable-element', {containerSelector : '.showcase-2'});
+        // 3. Example using a specified drag selector area
+        $('.set.drag-list li').dragArrange('.set.drag-list li', {dragSelector : '.drag-area'});
+        // 4. Dynamically added items
+        $('.addable.drag-list li').dragArrange('.addable.drag-list li', {dragSelector : '.drag-area'});
+        // 5. Customized dragging class
+        $('.ex5 .draggable-element').dragArrange('.ex5 .draggable-element', {cssPrefix : 'stooges_'});
 
-            $('.add.list-item').on('click', function () {
-                var nextTitle = 'List ' + ($('.addable.drag-list li').length + 1);
-                $list = $('.addable.drag-list');
-                var $listItem = $($list.children('li')[0]);
-                var $nextItem = $($listItem.clone());
-                $('.title', $nextItem).text(nextTitle);
-                $list.append($nextItem);
-            });
+        $('.add.list-item').on('click', function () {
+            var nextTitle = 'List ' + ($('.addable.drag-list li').length + 1);
+            $list = $('.addable.drag-list');
+            var $listItem = $($list.children('li')[0]);
+            var $nextItem = $($listItem.clone());
+            $('.title', $nextItem).text(nextTitle);
+            $list.append($nextItem);
         });
-    </script>
+    });
+</script>
 
 </body>
 </html>
