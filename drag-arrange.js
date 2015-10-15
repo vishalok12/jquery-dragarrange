@@ -1,5 +1,5 @@
 /**
- * drag-shift
+ * drag-arrange
  * http://github.com/vishalok12
  * Copyright (c) 2014 Vishal Kumar
  * Licensed under the MIT License.
@@ -32,7 +32,7 @@
         END : 'mouseup touchend'
     };
 
-    $.fn.arrangeable = function (dragElementsSelector, optionsOverrides) {
+    $.fn.dragArrange = function (dragElementsSelector, optionsOverrides) {
         if (!dragElementsSelector) {
             console.log('Cannot initialize arrangeable without drag elements selector specified!');
             return;
@@ -41,7 +41,7 @@
         // Options defaults
         var options = {
             cssPrefix : '',                   // Prefix used for classes added
-            containerSelector : '',            // Selector for container when not all draggables share immediate parent as container
+            containerSelector : '',            // Selector for container when not all draggable items share immediate parent as container
             scrollSpeed : 20                   // Number of pixels to move at a time at full speed
         };
 
@@ -69,10 +69,32 @@
         var $container = options.containerSelector ? $(options.containerSelector) : $($elements[0]).parent();
 
         // Attach handler at container level to allow for dynamic element addition!
-        var dragElementDragSelector = (options.dragSelector ? options.dragSelector : dragElementsSelector);
+        var dragElementDragSelector = (options.dragSelector ? options.dragSelector : separateElementsSelectorFromContainer());
+
         $container.on(dragEvents.START, dragElementDragSelector, dragStartHandler);
-        console.log('Events on: [' + dragElementDragSelector + ']');
-        console.log($container);
+
+        /* In order to bind events to the container so that dynamic element events are detected when
+         * they bubble up, we need to know how to filter the events. We do that by applying a selector
+         * filter. The filter selector CANNOT contain pieces of the container selector or it won't recognize
+         * it. So for example, if we have:
+         * $('ul.container li.dragElement').dragArrange('ul.container li.dragElement');
+         * The plugin will bind events to the ('ul.container') element and need to filter by ('li.dragElement').
+         * If it tries to filter by ('ul.container li.dragElement') it will fail, because of course the <ul>
+         * doesn't have another <ul> in it.
+         */
+        function separateElementsSelectorFromContainer() {
+            var elementSelectorPieces = dragElementsSelector.split(' ');
+            var containerSelectorPieces = [];
+            for (var i = 0; i < elementSelectorPieces.length; i++) {
+                if ($container.is(elementSelectorPieces[i])) {
+                    containerSelectorPieces.push(elementSelectorPieces[i]);
+                    continue;
+                }
+                break;
+            }
+            var containerSelector = containerSelectorPieces.join(' ');
+            return dragElementsSelector.replace(containerSelector, '').trim();
+        }
 
         function dragStartHandler(e) {
             // Capture mouse down/touchstart event (dragging won't start till threshold is reached)
@@ -145,7 +167,6 @@
 
         // Move page up or down to expose hidden parts of the container
         function autoScroll() {
-            console.log(currentX + ',' + currentY);
             var containerHeight = $container.outerHeight();
             var containerTopPos = $container.offset().top;
             var containerBottomPos = containerTopPos + containerHeight;
@@ -214,8 +235,6 @@
                 // Resume normal page scroll
                 $(window).add(document).off(dragEvents.MOVE, killPageScroll);
             }
-
-            //clearInterval(autoScrollId);
 
             touchDown = false;
         }
