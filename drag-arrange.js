@@ -33,27 +33,30 @@
     };
 
     $.fn.arrangeable = function (dragElementsSelector, optionsOverrides) {
-        if (! dragElementsSelector) {
+        if (!dragElementsSelector) {
             console.log('Cannot initialize arrangeable without drag elements selector specified!');
             return;
         }
 
-        var dragging = false;                 // Current state
-        var $clone;                           // jQuery object being visually dragged around
-        var dragElement;                      // DOM element being moved (not the cloned version)
-        var originalClientX, originalClientY; // Client(X|Y) position before drag starts
-        var $elements = this                  // List of jQuery object elements to shift between
-        var touchDown = false;                // Flag to note touch start event before movement threshold is reached
-        var leftOffset, topOffset;            //
-
         // Options defaults
         var options = {
             cssPrefix : '',                   // Prefix used for classes added
-            containerSelector: ''             // Selector for container when not all draggables share immediate parent as container
+            containerSelector : '',            // Selector for container when not all draggables share immediate parent as container
+            scrollSpeed : 20                   // Number of pixels to move at a time at full speed
         };
 
         // Override options if provided
         options = $.extend(options, optionsOverrides);
+
+        var dragging = false;                 // Current state
+        var $clone;                           // jQuery object being visually dragged around
+        var dragElement;                      // DOM element being moved (not the cloned version)
+        var $dragElement;                     // jQuery object of the real element being dragged around
+        var originalClientX, originalClientY; // Client(X|Y) position before drag starts
+        var currentX, currentY;               // The updated (X|Y) position of pointer
+        var touchDown = false;                // Flag to note touch start event before movement threshold is reached
+        var leftOffset, topOffset;            //
+        var $elements = this;                 // List of jQuery object elements to shift between - reload each time to catch dynamic elements
 
         /* The DOM element that contains all sortable elements ($elements) for group.
          * Will default to parent of first element, but can be overridden by providing
@@ -66,7 +69,7 @@
         var $container = options.containerSelector ? $(options.containerSelector) : $($elements[0]).parent();
 
         // Attach handler at container level to allow for dynamic element addition!
-        var dragElementDragSelector = (options.dragSelector ? options.dragSelector: dragElementsSelector);
+        var dragElementDragSelector = (options.dragSelector ? options.dragSelector : dragElementsSelector);
         $container.on(dragEvents.START, dragElementDragSelector, dragStartHandler);
         console.log('Events on: [' + dragElementDragSelector + ']');
         console.log($container);
@@ -75,15 +78,21 @@
             // Capture mouse down/touchstart event (dragging won't start till threshold is reached)
             touchDown = true;
 
+            // Refresh elements (catch dynamic elements that might be added!)
+            $elements = $(dragElementsSelector);
+
             // stopPropagation is compulsory, otherwise touchmove fires only once (android < 4 issue)
             e.stopPropagation();
 
             // Turn off browser default scrolling
             $(window).add(document).on(dragEvents.MOVE, killPageScroll);
 
-            originalClientX = e.clientX || e.originalEvent.touches[0].clientX;
-            originalClientY = e.clientY || e.originalEvent.touches[0].clientY;
+            originalClientX = currentX = e.pageX;
+            originalClientY = currentY = e.pageY;
             dragElement = options.dragSelector ? $(this).parents(dragElementsSelector)[0] : this;
+            $dragElement = $(dragElement);
+
+            //autoScrollId = setInterval(autoScroll, 200);
         }
 
         /*
@@ -95,8 +104,8 @@
             return false;
         }
 
-        // Bind mousemove/touchmove to document
-        // (as it is not compulsory that event will trigger on the dragging element)
+        // Bind mousemove/touchmove to document (as it is not compulsory
+        // that event will trigger on the dragging element)
         $(document)
             .on(dragEvents.MOVE, dragMoveHandler)
             .on(dragEvents.END, dragEndHandler);
@@ -106,10 +115,9 @@
                 return;
             } // Defense
 
-            var $dragElement = $(dragElement);
             $dragElement.css('touch-action', 'none'); // Tells IE to turn off default touch actions on element so normal events will happen
-            var dragDistanceX = (e.clientX || e.originalEvent.touches[0].clientX) - originalClientX;
-            var dragDistanceY = (e.clientY || e.originalEvent.touches[0].clientY) - originalClientY;
+            var dragDistanceX = e.pageX - originalClientX;
+            var dragDistanceY = e.pageY - originalClientY;
 
             if (dragging) {
                 e.stopPropagation();
@@ -119,27 +127,61 @@
                     top : topOffset + dragDistanceY
                 });
 
+                // Update X,Y position
+                currentX = e.pageX;
+                currentY = e.pageY;
                 autoScroll();
 
-                shiftHoveredElement($clone, $dragElement, $elements);
+                shiftHoveredElement($elements);
 
                 // Drag hasn't started yet, check threshold
             } else if (
                 Math.abs(dragDistanceX) > DRAG_THRESHOLD ||
                 Math.abs(dragDistanceY) > DRAG_THRESHOLD) {
 
-                initializeDragging($dragElement);
+                initializeDragging();
             }
         }
 
         // Move page up or down to expose hidden parts of the container
         function autoScroll() {
+            console.log(currentX + ',' + currentY);
+            var containerHeight = $container.outerHeight();
+            var containerTopPos = $container.offset().top;
+            var containerBottomPos = containerTopPos + containerHeight;
+            var windowHeight = $(window).height();
+            var docOffsetTop = $(document).scrollTop();
+            var dragElementHeight = $dragElement.outerHeight();
+            var easeFactor = 1;
 
+            // Don't bother if we're not dragging yet or the whole container is in the window
+            if (!dragging || (containerTopPos > docOffsetTop && containerBottomPos < windowHeight + docOffsetTop)) {
+                return;
+            }
+
+            // If the mouse is within the drag elements size distance to upper window
+            // AND the top of the container is not in view, scroll proportionally to
+            // how close we are to edge of window.
+            if (currentY > docOffsetTop && currentY < docOffsetTop + dragElementHeight && docOffsetTop > containerTopPos) {
+                easeFactor = (dragElementHeight + docOffsetTop - currentY) / dragElementHeight;
+                var scrollDistance = easeFactor * options.scrollSpeed;
+                $(document).scrollTop(docOffsetTop - (scrollDistance));
+            }
+
+            /* Do the same for the bottom of the container
+             * If the mouse is within the drag elements size distance to the bottom edge of
+             * the window AND the bottom of the container is not in view, scroll proportionally
+             * to how close we are to edge of window.
+             */
+            if (currentY > docOffsetTop + windowHeight - dragElementHeight && containerBottomPos > docOffsetTop + windowHeight) {
+                easeFactor = (docOffsetTop + windowHeight - currentY) / dragElementHeight;
+                $(document).scrollTop(docOffsetTop + (options.scrollSpeed * easeFactor));
+            }
         }
 
-        function initializeDragging($dragElement) {
+        function initializeDragging() {
             // Create clone to move around
-            $clone = clone($dragElement);
+            clone($dragElement);
 
             // Initialize left and top offset to be used in successive calls of this function
             leftOffset = dragElement.offsetLeft - parseInt($dragElement.css('margin-left')) -
@@ -173,11 +215,13 @@
                 $(window).add(document).off(dragEvents.MOVE, killPageScroll);
             }
 
+            //clearInterval(autoScrollId);
+
             touchDown = false;
         }
 
         function clone($element) {
-            var $clone = $element.clone();
+            $clone = $element.clone();
 
             $clone.css({
                 position : 'absolute',
@@ -185,15 +229,13 @@
                 height : $element.height(),
                 'z-index' : 100000 // Very high value to prevent it to hide below other element(s)
             }).addClass(options.cssPrefix + 'dragging');
-
-            return $clone;
         }
 
         /**
          * Find the element on which the dragged element is hovering
          * @return Object hovered over DOM element
          */
-        function getHoveredElement($clone, $dragElement, $movableElements) {
+        function getHoveredElement() {
             var cloneOffset = $clone.offset();
             var cloneWidth = $clone.width();
             var cloneHeight = $clone.height();
@@ -205,8 +247,8 @@
             var horizontalMidPosition, verticalMidPosition;
             var offset, overlappingX, overlappingY, inRange;
 
-            for (var i = 0; i < $movableElements.length; i++) {
-                $currentElement = $movableElements.eq(i);
+            for (var i = 0; i < $elements.length; i++) {
+                $currentElement = $elements.eq(i);
 
                 if ($currentElement[0] === $dragElement[0]) {
                     continue;
@@ -233,13 +275,13 @@
             }
         }
 
-        function shiftHoveredElement($clone, $dragElement, $movableElements) {
-            var hoveredElement = getHoveredElement($clone, $dragElement, $movableElements);
+        function shiftHoveredElement() {
+            var hoveredElement = getHoveredElement();
 
             if (hoveredElement !== $dragElement[0]) {
                 // shift all other elements to make space for the dragged element
-                var hoveredElementIndex = $movableElements.index(hoveredElement);
-                var dragElementIndex = $movableElements.index($dragElement);
+                var hoveredElementIndex = $elements.index(hoveredElement);
+                var dragElementIndex = $elements.index($dragElement);
                 if (hoveredElementIndex < dragElementIndex) {
                     $(hoveredElement).before($dragElement);
                 } else {
@@ -247,14 +289,13 @@
                 }
 
                 // since elements order have changed, need to change order in jQuery Object too
-                shiftElementPosition($movableElements, dragElementIndex, hoveredElementIndex);
+                shiftElementPosition(dragElementIndex, hoveredElementIndex);
             }
         }
 
-        function shiftElementPosition(arr, fromIndex, toIndex) {
-            var temp = arr.splice(fromIndex, 1)[0];
-            return arr.splice(toIndex, 0, temp);
+        function shiftElementPosition(fromIndex, toIndex) {
+            var temp = $elements.splice(fromIndex, 1)[0];
+            $elements.splice(toIndex, 0, temp);
         }
     };
-
 }));
