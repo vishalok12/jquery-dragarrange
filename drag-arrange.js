@@ -73,6 +73,12 @@
 
         $container.on(dragEvents.START, dragElementDragSelector, dragStartHandler);
 
+        // Bind mousemove/touchmove to document (as it is not compulsory
+        // that event will trigger on the dragging element)
+        $(document).add(window)
+            .on(dragEvents.MOVE, dragMoveHandler)
+            .on(dragEvents.END, dragEndHandler);
+
         /* In order to bind events to the container so that dynamic element events are detected when
          * they bubble up, we need to know how to filter the events. We do that by applying a selector
          * filter. The filter selector CANNOT contain pieces of the container selector or it won't recognize
@@ -109,12 +115,33 @@
             // Turn off browser default scrolling
             $(window).add(document).on(dragEvents.MOVE, killPageScroll);
 
-            originalClientX = currentX = e.pageX;
-            originalClientY = currentY = e.pageY;
+            // Set current and initial touch spot relative to document (not window)
+            var eventCoords = getDocumentCoordinatesForEvent(e);
+            originalClientX = currentX = eventCoords.x;
+            originalClientY = currentY = eventCoords.y;
             dragElement = options.dragSelector ? $(this).parents(dragElementsSelector)[0] : this;
             $dragElement = $(dragElement);
 
-            //autoScrollId = setInterval(autoScroll, 200);
+            initializeDragging();
+        }
+
+        function getDocumentCoordinatesForEvent(event) {
+            // If we have pageX and pageY, then we don't really need any more calculations!
+            if (event.pageX) {
+                return {
+                    x : event.pageX,
+                    y : event.pageY
+                };
+            }
+            // Otherwise, we have to look a few places and add the window position to scrolled positoin
+            else {
+                var windowX = event.clientX || event.originalEvent.touches[0].clientX;
+                var windowY = event.clientY || event.originalEvent.touches[0].clientY;
+                return {
+                    x : windowX, // TODO: account for horizontal scroll!
+                    y : windowY + $(document).scrollTop()
+                };
+            }
         }
 
         /*
@@ -126,20 +153,15 @@
             return false;
         }
 
-        // Bind mousemove/touchmove to document (as it is not compulsory
-        // that event will trigger on the dragging element)
-        $(document)
-            .on(dragEvents.MOVE, dragMoveHandler)
-            .on(dragEvents.END, dragEndHandler);
-
         function dragMoveHandler(e) {
             if (!touchDown) {
                 return;
             } // Defense
 
             $dragElement.css('touch-action', 'none'); // Tells IE to turn off default touch actions on element so normal events will happen
-            var dragDistanceX = e.pageX - originalClientX;
-            var dragDistanceY = e.pageY - originalClientY;
+            var eventCoordinates = getDocumentCoordinatesForEvent(e);
+            var dragDistanceX = eventCoordinates.x - originalClientX;
+            var dragDistanceY = eventCoordinates.y - originalClientY;
 
             if (dragging) {
                 e.stopPropagation();
@@ -150,11 +172,11 @@
                 });
 
                 // Update X,Y position
-                currentX = e.pageX;
-                currentY = e.pageY;
-                autoScroll();
+                currentX = eventCoordinates.x;
+                currentY = eventCoordinates.y;
 
-                shiftHoveredElement($elements);
+                autoScroll();
+                shiftHoveredElement();
 
                 // Drag hasn't started yet, check threshold
             } else if (
@@ -167,36 +189,32 @@
 
         // Move page up or down to expose hidden parts of the container
         function autoScroll() {
-            var containerHeight = $container.outerHeight();
             var containerTopPos = $container.offset().top;
+            var docOffsetTop = $(document).scrollTop();
+            var containerHeight = $container.outerHeight();
             var containerBottomPos = containerTopPos + containerHeight;
             var windowHeight = $(window).height();
-            var docOffsetTop = $(document).scrollTop();
-            var dragElementHeight = $dragElement.outerHeight();
-            var easeFactor = 1;
 
             // Don't bother if we're not dragging yet or the whole container is in the window
             if (!dragging || (containerTopPos > docOffsetTop && containerBottomPos < windowHeight + docOffsetTop)) {
                 return;
             }
 
-            // If the mouse is within the drag elements size distance to upper window
-            // AND the top of the container is not in view, scroll proportionally to
-            // how close we are to edge of window.
-            if (currentY > docOffsetTop && currentY < docOffsetTop + dragElementHeight && docOffsetTop > containerTopPos) {
-                easeFactor = (dragElementHeight + docOffsetTop - currentY) / dragElementHeight;
-                var scrollDistance = easeFactor * options.scrollSpeed;
-                $(document).scrollTop(docOffsetTop - (scrollDistance));
+            // Determine scroll zone height is the smaller of: height of the dragged item or 25% of window height
+            var dragElementHeight = $dragElement.outerHeight();
+            var scrollZoneHeight = Math.min(dragElementHeight, windowHeight/4);
+
+            // If the mouse is within the upper window scroll zone AND the top of the container
+            // is not in view, scroll proportionally to how close we are to edge of window.
+            if (currentY < docOffsetTop + scrollZoneHeight &&
+                docOffsetTop > containerTopPos) {
+                $(document).scrollTop(docOffsetTop - (options.scrollSpeed));
             }
 
-            /* Do the same for the bottom of the container
-             * If the mouse is within the drag elements size distance to the bottom edge of
-             * the window AND the bottom of the container is not in view, scroll proportionally
-             * to how close we are to edge of window.
-             */
-            if (currentY > docOffsetTop + windowHeight - dragElementHeight && containerBottomPos > docOffsetTop + windowHeight) {
-                easeFactor = (docOffsetTop + windowHeight - currentY) / dragElementHeight;
-                $(document).scrollTop(docOffsetTop + (options.scrollSpeed * easeFactor));
+            // Do the same for the bottom scroll zone
+            if (currentY > docOffsetTop + windowHeight - scrollZoneHeight &&
+                containerBottomPos > docOffsetTop + windowHeight) {
+                $(document).scrollTop(docOffsetTop + (options.scrollSpeed));
             }
         }
 
@@ -231,10 +249,10 @@
                 dragging = false;
                 $clone.remove();
                 dragElement.style.visibility = 'visible';
-
-                // Resume normal page scroll
-                $(window).add(document).off(dragEvents.MOVE, killPageScroll);
             }
+
+            // Resume normal page scroll
+            $(window).add(document).off(dragEvents.MOVE, killPageScroll);
 
             touchDown = false;
         }
