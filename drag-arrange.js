@@ -1,7 +1,7 @@
 /**
  * drag-arrange
  * http://github.com/vishalok12
- * Copyright (c) 2014 Vishal Kumar
+ * Copyright (c) 2014 Vishal Kumar; 2015 Jared Carlow
  * Licensed under the MIT License.
  */
 'use strict';
@@ -42,7 +42,7 @@
         var options = {
             cssPrefix : '',                   // Prefix used for classes added
             containerSelector : '',            // Selector for container when not all draggable items share immediate parent as container
-            scrollSpeed : 20                   // Number of pixels to move at a time at full speed
+            scrollSpeed : 15                   // Number of pixels to move at a time at full speed
         };
 
         // Override options if provided
@@ -55,7 +55,7 @@
         var originalClientX, originalClientY; // Client(X|Y) position before drag starts
         var currentX, currentY;               // The updated (X|Y) position of pointer
         var touchDown = false;                // Flag to note touch start event before movement threshold is reached
-        var leftOffset, topOffset;            //
+        var leftOffset, topOffset;            // CSS left and top property distance of dragging element
         var $elements = this;                 // List of jQuery object elements to shift between - reload each time to catch dynamic elements
 
         /* The DOM element that contains all sortable elements ($elements) for group.
@@ -79,14 +79,16 @@
             .on(dragEvents.MOVE, dragMoveHandler)
             .on(dragEvents.END, dragEndHandler);
 
-        /* In order to bind events to the container so that dynamic element events are detected when
-         * they bubble up, we need to know how to filter the events. We do that by applying a selector
-         * filter. The filter selector CANNOT contain pieces of the container selector or it won't recognize
-         * it. So for example, if we have:
+        /* In order to detect dynamic elements, we need to bind events to their container so when
+         * they bubble up they can be noticed. In order to detect the events properly, we need to filter the events.
+         * This is done by applying a selector filter. The filter selector CANNOT contain pieces of the
+         * container selector or it won't recognize it. So for example, if we have:         *
          * $('ul.container li.dragElement').dragArrange('ul.container li.dragElement');
          * The plugin will bind events to the ('ul.container') element and need to filter by ('li.dragElement').
          * If it tries to filter by ('ul.container li.dragElement') it will fail, because of course the <ul>
-         * doesn't have another <ul> in it.
+         * doesn't have another <ul> in it. This function separates the selector pieces of the container out so the
+         * filter will work. This is done because the .selector property has been deprecated from jQuery (see
+         * http://api.jquery.com/selector/).
          */
         function separateElementsSelectorFromContainer() {
             var elementSelectorPieces = dragElementsSelector.split(' ');
