@@ -20,6 +20,11 @@ Optional Parameters
 -------------------
 ###dragSelector
 If passed, object can be dragged only from this selector. The default dragSelector is same DOM element that has called the function.
+###dragEndEvent
+(Default: `"drag.end.arrangeable"`)
+
+When dragging ends, the draggable element's container triggers the specified event.
+First arguemnt (after the event object itself) is the jQuery object that was being dragged.
 
 ###Setup
 ```
