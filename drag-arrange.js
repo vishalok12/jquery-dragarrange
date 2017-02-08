@@ -68,7 +68,11 @@
       }
     }
 
-    options = $.extend({}, options);
+    options = $.extend({
+      "dragEndEvent": "drag.end.arrangeable"
+    }, options);
+
+    var dragEndEvent = options["dragEndEvent"];
 
     $elements = this;
     eventNamespace = getEventNamespace();
@@ -153,6 +157,8 @@
         dragging = false;
         $clone.remove();
         dragElement.style.visibility = 'visible';
+
+        $(dragElement).parent().trigger(dragEndEvent, [$(dragElement)]);
       }
 
       touchDown = false;
