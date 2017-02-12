@@ -28,24 +28,21 @@
 
   /**
    * Javascript events for touch device/desktop
-   * @return {Object}
+   * A Touch-screen device will also likely be compatible with mouse events,
+   * so on Touch enabled devices we should also listen for mouse-related events.
+   * However we register Touch-related events only on touch-enabled screens.
+   * @type {Object}
    */
-  var dragEvents = (function () {
-    if (IS_TOUCH_DEVICE) {
-      return {
-        START: 'touchstart',
-        MOVE: 'touchmove',
-        END: 'touchend'
-      };
-    }
-    else {
-      return {
-        START: 'mousedown',
-        MOVE: 'mousemove',
-        END: 'mouseup'
-      };
-    }
-  }());
+  var dragEventsMouse = {
+    START: 'mousedown',
+    MOVE: 'mousemove',
+    END: 'mouseup'
+  };
+  var dragEventsTouch = {
+    START: 'touchstart',
+    MOVE: 'touchmove',
+    END: 'touchend'
+  };
 
   $.fn.arrangeable = function(options) {
     var dragging = false;
@@ -84,9 +81,11 @@
       var $this = $(this);
 
       if (dragSelector) {
-        $this.on(dragEvents.START + eventNamespace, dragSelector, dragStartHandler);
+        $this.on(dragEventsMouse.START + eventNamespace, dragSelector, dragStartHandler);
+        if (IS_TOUCH_DEVICE) $this.on(dragEventsTouch.START + eventNamespace, dragSelector, dragStartHandler);
       } else {
-        $this.on(dragEvents.START + eventNamespace, dragStartHandler);
+        $this.on(dragEventsMouse.START + eventNamespace, dragStartHandler);
+        if (IS_TOUCH_DEVICE) $this.on(dragEventsTouch .START + eventNamespace, dragStartHandler);
       }
 
       function dragStartHandler(e) {
@@ -102,8 +101,12 @@
 
     // bind mouse-move/touchmove on document
     // (as it is not compulsory that event will trigger on dragging element)
-    $(document).on(dragEvents.MOVE + eventNamespace, dragMoveHandler)
-      .on(dragEvents.END + eventNamespace, dragEndHandler);
+    $(document).on(dragEventsMouse.MOVE + eventNamespace, dragMoveHandler)
+      .on(dragEventsMouse.END + eventNamespace, dragEndHandler);
+    if (IS_TOUCH_DEVICE) {
+      $(document).on(dragEventsTouch.MOVE + eventNamespace, dragMoveHandler)
+        .on(dragEventsTouch.END + eventNamespace, dragEndHandler);
+    }
 
     function dragMoveHandler(e) {
       if (!touchDown) { return; }
@@ -171,14 +174,20 @@
         var $this = $(this);
 
         if (dragSelector) {
-          $this.off(dragEvents.START + eventNamespace, dragSelector);
+          $this.off(dragEventsMouse.START + eventNamespace, dragSelector);
+          if (IS_TOUCH_DEVICE) $this.off(dragEventsTouch.START + eventNamespace, dragSelector);
         } else {
-          $this.off(dragEvents.START + eventNamespace);
+          $this.off(dragEventsMouse.START + eventNamespace);
+          if (IS_TOUCH_DEVICE) $this.off(dragEventsTouch.START + eventNamespace);
         }
       });
 
-      $(document).off(dragEvents.MOVE + eventNamespace)
-        .off(dragEvents.END + eventNamespace);
+      $(document).off(dragEventsMouse.MOVE + eventNamespace)
+        .off(dragEventsMouse.END + eventNamespace);
+      if (IS_TOUCH_DEVICE) {
+        $(document).off(dragEventsTouch.MOVE + eventNamespace)
+          .off(dragEventsTouch.END + eventNamespace);
+      }
 
       // remove data
       $elements.eq(0).data('drag-arrange-destroy', null);
